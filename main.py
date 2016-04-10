@@ -1,5 +1,6 @@
 import sys
 import codecs
+import re
 
 def _raw_bytes_to_str(bytes):
     return ''.join(map(chr, bytes))
@@ -10,15 +11,28 @@ def usage():
     print('Usage: swf_code_split.py FILE');
 
 def find_class(file):
-    CLASS_MARKER_REGEX_STR = '\tpublic (class)|(namespace) (?P=class)'
-    for line in file:
-        if line.startswith(CLASS_MARKER):
-            return line[len(CLASS_MARKER):]
+    CLASS_MARKER_REGEX_STR = (
+        r'\n\s*'
+        '(public )?(final )?(dynamic )?'
+        '(class |namespace |interface |function )'
+        '(?P<class>\w+?)'
+        '(\s|\().*\n'
+    )
+    match = re.search(CLASS_MARKER_REGEX_STR, file)
+    if match:
+        return match.group('class')
     return None
     
 def find_package(file):
-    PKG_MARKER_REGEX_STR = 'package (?P=package)'
-    return rx.match(PKG_MARKER_REGEX_STR)['package']
+    PKG_MARKER_REGEX_STR = (
+        r'^package '
+        '((?P<package>(\w|\.)+?) )'
+        '{\n'
+    )
+    match = re.match(PKG_MARKER_REGEX_STR, file)
+    if match is None:
+        return None
+    return match.group('package')
 
 def process_file(file):
     print(file.split('\n')[0])
