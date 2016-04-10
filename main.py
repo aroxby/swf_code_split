@@ -1,6 +1,7 @@
 import sys
 import codecs
 import re
+import os.path
 
 def _raw_bytes_to_str(bytes):
     return ''.join(map(chr, bytes))
@@ -35,8 +36,31 @@ def find_package(file):
     return match.group('package')
 
 def process_file(file):
-    package = find_package(file) or '.'
-    print(package + ':' + find_class(file))
+    return find_package(file), find_class(file)
+
+def create_path(package, klass):
+    if package is None:
+        path = ''
+    else:
+        path = package.replace('.', '/')
+        path += '/'
+    file = klass + '.as'
+    return path + file
+
+def make_file_path(path):
+    path = os.path.dirname(path)
+    if len(path) >= 1 and not os.path.exists(path):
+        os.makedirs(path)
+
+def write_file(path, contents):
+    for_real = True
+    if for_real:
+        make_file_path(path)
+        with open(path, 'w') as fh:
+            fh.write(contents)
+    else:
+        bytes = str(len(contents)) + ' bytes'
+        print('write: ' + path + ' (' + bytes + ')')
 
 def code_split(path):
     with open(path) as fp:
@@ -44,7 +68,9 @@ def code_split(path):
         packed_files = contents.split(PKG_MARKER)
         for item in packed_files:
             if len(item.strip())!=0:
-                process_file(item)
+                package, klass = process_file(item)
+                path = create_path(package, klass)
+                write_file(path, item)
     return 0
 
 def main():
