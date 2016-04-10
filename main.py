@@ -35,7 +35,8 @@ def find_package(file):
     return match.group('package')
 
 def process_file(file):
-    print(file.split('\n')[0])
+    package = find_package(file) or '.'
+    print(package + ':' + find_class(file))
 
 def code_split(path):
     with open(path) as fp:
