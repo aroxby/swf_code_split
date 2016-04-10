@@ -1,10 +1,10 @@
 import sys
 import codecs
 
-def raw_bytes_to_str(bytes):
+def _raw_bytes_to_str(bytes):
     return ''.join(map(chr, bytes))
 
-PKG_MARKER = raw_bytes_to_str(codecs.BOM_UTF8)
+PKG_MARKER = _raw_bytes_to_str(codecs.BOM_UTF8)
 
 def usage():
     print('Usage: swf_code_split.py FILE');
